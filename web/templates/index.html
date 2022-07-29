@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} Welcome to Bunnyshell {% endblock %}</h1>
+
+    <h3>{% block hits %} Hits {% endblock %}</h3>
+    <div class='hits'>
+        <p>{{ hit_count }}</p>
+    </div>
+
+    <h3>{% block posts %} Posts {% endblock %}</h3>
+    {% for post in posts %}
+        <div class='post'>
+            <h4>{{ post['title'] }}</h4>
+            <p>{{ post['content'] }}</p>
+            <p>{{ post['created'] }}</p>
+        </div>
+    {% endfor %}
+
+
+{% endblock %}
