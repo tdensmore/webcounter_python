@@ -1,20 +1,67 @@
 import time
 import redis
 import sqlite3
+import logging
+
+from minio import Minio
+from minio.error import S3Error
+
+# import psycopg2
+# from psycopg2.extras import LoggingConnection
 from flask import Flask, render_template, request, url_for, flash, redirect
 
 app = Flask(__name__)
-
 app.config['SECRET_KEY'] = 'secret_key_value'
 
 # Redis
 cache = redis.Redis(host='database-redis', port=6379)
 
+# Logger
+logging.basicConfig(filename="/usr/src/app/webapp.logs", level=logging.DEBUG, filemode='a')
+logger = logging.getLogger('webapp')
+
+
+def backup_to_s3():
+    # Create a client with the MinIO server playground, its access key
+    # and secret key.
+    client = Minio(
+        "play.min.io",
+        access_key="Q3AM3UQ867SPQQA43P2F",
+        secret_key="zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG",
+    )
+
+    # Make 'asiatrip' bucket if not exist.
+    found = client.bucket_exists("weblogzbackup")
+    if not found:
+        client.make_bucket("weblogzbackup")
+    else:
+        print("Bucket 'weblogzbackup' already exists")
+
+    # Upload '/usr/src/app/webapp.logs' as object name
+    # 'webapp.logs' to bucket 'weblogzbackup'.
+    client.fput_object(
+        "weblogzbackup", "webapp.logs", "/usr/src/app/webapp.logs",
+    )
+    print("successfully uploaded ")
+
 # Get SQLite database connection
 def get_db_connection():
+
+    # SQLite
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
     #print "Opened database successfully"
+
+    # db_settings = {
+    #     "user": "postgres",
+    #     "password": "password",
+    #     "host": "127.0.0.1",
+    #     "database": "testdb",
+    # }
+    # # connect to the PostgreSQL server
+    # conn = psycopg2.connect(connection_factory=LoggingConnection, **db_settings)
+    # conn.initialize(logger)
+
     return conn
 
 def get_hit_count():
@@ -28,17 +75,18 @@ def get_hit_count():
             retries -= 1
             time.sleep(0.5)
 
-
 @app.route('/')
 def index():
     hit_count = get_hit_count()
-    #return 'I have been hit %i times since deployment.\n' % int(count)
-    # return render_template('index.html')
+    if (hit_count % 25) == 0:
+        logging.debug('Uploading the logs to S3.')
+        backup_to_s3()
+
     conn = get_db_connection()
     posts = conn.execute('SELECT * FROM posts').fetchall()
     conn.close()
+    logging.debug('Current page hits: %s', hit_count )
     return render_template('index.html', posts=posts, hit_count=hit_count)
-    #return render_template('index.html', posts=posts, hit_count=444)
 
 @app.route('/create/', methods=('GET', 'POST'))
 def create():
