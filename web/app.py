@@ -17,7 +17,7 @@ app.config['SECRET_KEY'] = 'secret_key_value'
 cache = redis.Redis(host='database-redis', port=6379)
 
 # Logger
-logging.basicConfig(filename="/usr/src/app/webapp.logs", level=logging.DEBUG, filemode='a')
+logging.basicConfig(filename="./webapp.logs", level=logging.DEBUG, filemode='a')
 logger = logging.getLogger('webapp')
 
 
@@ -40,7 +40,7 @@ def backup_to_s3():
     # Upload '/usr/src/app/webapp.logs' as object name
     # 'webapp.logs' to bucket 'weblogzbackup'.
     client.fput_object(
-        "weblogzbackup", "webapp.logs", "/usr/src/app/webapp.logs",
+        "weblogzbackup", "webapp.logs", "./webapp.logs",
     )
     print("successfully uploaded ")
 

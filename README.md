@@ -23,6 +23,8 @@ The app is written in Python, using Flask framework
 Download/pull this repository:
 `git clone https://github.com/rustudorcalin/hit-counter.git`
 
+Article: `https://www.digitalocean.com/community/tutorials/how-to-use-an-sqlite-database-in-a-flask-application`
+
 Go to the newly created directory
 `cd hit-counter`
 
