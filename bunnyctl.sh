@@ -4,13 +4,15 @@
 
 #bunnyctl dev --environment <env-id> --component frontend --docker demoapp --mount ./myapp:/var/www
 
-# service_name="web-python"
-# environment_name="env-kqcjip"
+service_name="web-python"
+environment_name="env-kqcjip"
 
 command="$1"
 
-if [ -z "$command" ]
+
+if [ "$command" = "connect" ]
 then
+      
       if [ -z "$service_name" ]
       then
       #   echo -e "service name: "; read service_name;
@@ -30,19 +32,21 @@ then
 
 fi
 
+if [ "$command" = "list" ]; then
+
+      telepresence list
+
+fi
+
 if [ "$command" = "disconnect" ]; then
+
+      telepresence leave "$service_name-$environment_name"
 
       echo -e "disconnecting: $service_name from: $environment_name"
 
 fi
 
-
-
-
-
-
-
-
-
-
-
+if [ -z "$command" ]
+then
+      echo -e "usage: 'connect' or 'disconnect' "
+fi
